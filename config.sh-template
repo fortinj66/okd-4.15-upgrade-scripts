@@ -1,0 +1,19 @@
+#!/bin/bash
+export GOVC_INSECURE=1 # In order to NOT verify SSL certs on vCenter
+export GOVC_URL=https://vcenter.example.com/sdk # Your SDDC / vCenter IP or FQDN
+export GOVC_USERNAME=user@example.com # vCenter username
+export GOVC_PASSWORD="password!!" # vCenter password
+
+export GOVC_DATACENTER=POC-ESX # Default folder for our deployments
+export GOVC_DATASTORE=Boot_LUN01 # Default datastore to deploy to - Neccessary for deployments to VMC!
+export GOVC_NETWORK=VLAN_65 # Default network to deploy to
+export GOVC_FOLDER=poc-c1v4-vmwv8 # Default folder for our deployments
+
+export GOVC_HOST=host.example.com
+
+export OKD_API=https://api.poc-c1v4.os.example.com:6443 
+export OKD_TOKEN=sha256~oD6-p3_KQ3cyQhHS3iIVKwSOsC-fJj5Z6GsvdEG6FIQ
+export OKD_STABILIZE_TIME=60
+
+export TEMPLATE=poc-c1v4-qrztq-rhcos-generated-region-generated-zone
+
