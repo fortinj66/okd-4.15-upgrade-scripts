@@ -19,11 +19,10 @@ echo
 
 for TEMPLATE in ${TEMPLATES}
 do
-
   echo "  Changing ${TEMPLATE} to VM"
   govc vm.markasvm ${TEMPLATE} 
   echo "  Setting Secure Boot to false on ${TEMPLATE}"
-  govc device.boot -vm ${TEMPLATE} -secure=false
+  govc device.boot -vm ${TEMPLATE} -secure=false -firmware=efi
   echo "  Changing ${TEMPLATE} to Template"
   govc vm.markastemplate ${TEMPLATE}
 done
@@ -34,7 +33,14 @@ echo "Template Modification is Complete"
 echo
 echo "Preparing to Disable Secure Boot on Worker Nodes"
 
-NODES=$(oc get nodes --no-headers -o custom-columns=NAME:metadata.name --selector='!node-role.kubernetes.io/master')
+WORKERS=$(oc get nodes --no-headers -o custom-columns=NAME:metadata.name --selector='!node-role.kubernetes.io/master')
+
+if [[ ${ENABLE_CONTROL_PLANE_UPGRADE} == "true" ]]
+then
+	CONTROL_PLANES=$(oc get nodes --no-headers -o custom-columns=NAME:metadata.name --selector='node-role.kubernetes.io/master')
+fi	
+
+NODES="${CONTROL_PLANES} ${WORKERS}"
 
 for node in $NODES
 do
@@ -51,13 +57,19 @@ do
 		sleep 5
 	done
 
+	while [[ "$(oc get node ${node} --subresource status --no-headers | awk '{print $2}')" != NotReady* ]] 
+	do
+		echo "   Waiting for ${node} to be NotReady "
+		sleep 5
+	done
+
 	echo "Turn off Secure Boot on ${node}"
 	govc device.boot -vm ${node} -secure=false >/dev/null
 
 	echo "Power on ${node}"
 	govc vm.power -wait -on ${node} >/dev/null
 
-	while [[ "$(oc get node ${node} --subresource status --no-headers | awk '{print $2}')" != "Ready" ]] 
+	while [[ "$(oc get node ${node} --subresource status --no-headers | awk '{print $2}')" != Ready* ]] 
 	do
 		echo "   Waiting for ${node} to be Ready "
 		sleep 5

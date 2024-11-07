@@ -14,6 +14,7 @@ export GOVC_HOST=host.example.com
 export OKD_API=https://api.poc-c1v4.os.example.com:6443 
 export OKD_TOKEN=sha256~oD6-p3_KQ3cyQhHS3iIVKwSOsC-fJj5Z6GsvdEG6FIQ
 export OKD_STABILIZE_TIME=60
+export ENABLE_CONTROL_PLANE_UPGRADE=false
 
 export TEMPLATE=poc-c1v4-qrztq-rhcos-generated-region-generated-zone
 
