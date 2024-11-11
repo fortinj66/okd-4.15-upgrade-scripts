@@ -14,6 +14,7 @@ export TEMPLATES=$(echo ${TEMPLATES} ${TEMPLATE} | xargs -n 1 | sort | uniq)
 
 echo TEMPLATES=${TEMPLATES}
 echo
+
 echo "Template Modification is Starting"
 echo
 
@@ -45,7 +46,7 @@ NODES="${CONTROL_PLANES} ${WORKERS}"
 for node in $NODES
 do
 	echo "Draining ${node}"
-	oc adm drain --ignore-daemonsets --delete-emptydir-data ${node}  >/dev/null  2>&1
+	oc adm drain --timeout=${DRAIN_TIMEOUT} --ignore-daemonsets --delete-emptydir-data ${node}  >/dev/null  2>&1
 	sleep 30
 
 	echo "Shutdown ${node}"
@@ -64,6 +65,7 @@ do
 	done
 
 	echo "Turn off Secure Boot on ${node}"
+	govc device.boot -vm ${node} -firmware=efi >/dev/null
 	govc device.boot -vm ${node} -secure=false >/dev/null
 
 	echo "Power on ${node}"
