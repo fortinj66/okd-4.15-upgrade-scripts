@@ -1,6 +1,6 @@
 source ./config.sh
 
-oc login --server=${OKD_API} --token=${OKD_TOKEN}  >/dev/null
+oc login --server=${OKD_API} --token=${OKD_TOKEN} 
 
 MACHINESETS=$(oc get machineset -A --no-headers -o custom-columns=NAME:metadata.name)
 
@@ -46,7 +46,8 @@ NODES="${CONTROL_PLANES} ${WORKERS}"
 for node in $NODES
 do
 	echo "Draining ${node}"
-	oc adm drain --timeout=${DRAIN_TIMEOUT} --ignore-daemonsets --delete-emptydir-data ${node}  >/dev/null  2>&1
+	#oc adm drain --timeout=${DRAIN_TIMEOUT} --ignore-daemonsets --delete-emptydir-data ${node}  >/dev/null  2>&1
+	oc adm drain --timeout=${DRAIN_TIMEOUT} --ignore-daemonsets --delete-emptydir-data --force ${node}
 	sleep 30
 
 	echo "Shutdown ${node}"
