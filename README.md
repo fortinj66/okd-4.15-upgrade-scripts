@@ -1,3 +1,7 @@
+# These are a set of scripts which faciltate the upgrade of OKD 4.15 (FCOS) to OKD 4.16 (SCOS) 
+
+# pre-upgrade-4.15.sh:
+
 This script updates the template and worker nodes on vSphere to disable Secure Boot.  Secure Boot is the default on FCOS templates but not currently supported on SCOS.
 
 Copy config.sh-template file to config.sh and modify to match your environment.
@@ -12,5 +16,48 @@ The script waits for the node to come back up into a Ready state, uncordons the 
 
 UPI Installs:
    * There is now a flag to process Control Plane nodes if needed.  I discovered that UPI nodes may have the Control Plane Secure Boot enabled:  
-       ENABLE_CONTROL_PLANE_UPGRADE=false
+       ```ENABLE_CONTROL_PLANE_UPGRADE=false```
    * The vSphere vm names and the OKD node names need to be the same
+
+# update_cluster_4.16.sh:
+
+This cluster updates  4.15 cluster to fix the broken update process.  Applies a patch to kube-apiserver-operator.
+
+update the following variable in the script to the target 4.16 version.  Default is 4.16.0-okd-scos.1
+
+```tgt_cluster=4.16.0-okd-scos.1```
+
+Patch looks something like this:
+
+PATCH:
+```{
+  "spec": {
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "name": "kube-apiserver-operator",
+            "image": "quay.io/okd/scos-content@sha256:37d6b6c13d864deb7ea925acf2b2cb34305333f92ce64e7906d3f973a8071642",
+            "env": [
+              {
+                "name": "IMAGE",
+                "value": "quay.io/okd/scos-content@sha256:5c9128668752a9b891a24a9ec36e0724d975d6d49e6e4e2d516b5ba80ae2fb23"
+              },
+              {
+                "name": "OPERATOR_IMAGE",
+                "value": "quay.io/okd/scos-content@sha256:37d6b6c13d864deb7ea925acf2b2cb34305333f92ce64e7906d3f973a8071642"
+              },
+              {
+                "name": "OPERAND_IMAGE_VERSION",
+                "value": "1.29.6"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+
